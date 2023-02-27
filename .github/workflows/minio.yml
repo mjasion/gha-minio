@@ -1,0 +1,22 @@
+name: Create Minio
+on: push
+jobs:
+  minio:
+    runs-on: ubuntu-latest
+    services:
+      minio:
+        image: minio/minio:edge-cicd # https://stackoverflow.com/a/64188150/5155484
+        ports: 
+          - 9000:9000
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        options: --health-cmd "curl --silent http://localhost:9000/minio/health/live"
+        
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create a minio bucket
+        run: |
+          go install github.com/minio/mc@latest && PATH="$(go env GOPATH)/bin:$PATH"
+          mc alias set minio http://localhost:9000 minioadmin minioadmin
+          mc mb minio/mjasion
